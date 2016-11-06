@@ -12,7 +12,7 @@ SOURCES += main.cpp \
     Cara.cpp \
     lights.cpp \
     Camera.cpp \
-    jsmn.c
+    light.cpp
 
 HEADERS += \
     Modelo3D.h \
@@ -21,7 +21,7 @@ HEADERS += \
     Cara.h \
     lights.h \
     Camera.h \
-    jsmn.h
+    light.h
 
 
 

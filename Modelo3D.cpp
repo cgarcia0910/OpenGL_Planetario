@@ -1,16 +1,43 @@
-#include "Modelo3D.h"
+﻿#include "Modelo3D.h"
 #include <math.h>
 #include <GL/freeglut_ext.h>
 
 using namespace std;
 const int MOUSE_SCROLL_UP = 3;
 const int MOUSE_SCROLL_DOWN = 4;
-Modelo3D::Modelo3D(double sunDistance, char *model, float radius) {
+
+void Modelo3D::setVector4(GLfloat *v, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
+{
+    v[0] = v0;
+    v[1] = v1;
+    v[2] = v2;
+    v[3] = v3;
+}
+Modelo3D::Modelo3D(double sunDistance, char *model, float radius, float w, GLfloat mat_ambiente[4], GLfloat mat_diffuse[4], GLfloat mat_specular[4]) {
     this->sunDistance = sunDistance;
     NFaces = 0;
     NVertex = 0;
     zoom = 0;
     this->radius = radius;
+    this->w = w;
+    this->satelite = false;
+    setVector4(this->mat_ambiente, mat_ambiente[0], mat_ambiente[1], mat_ambiente[2],mat_ambiente[3]);
+    setVector4(this->mat_diffuse, mat_diffuse[0], mat_diffuse[1], mat_diffuse[2],mat_diffuse[3]);
+    setVector4(this->mat_specular, mat_specular[0], mat_specular[1], mat_specular[2],mat_specular[3]);
+    Load_Model(model);
+}
+Modelo3D::Modelo3D(double planetDistance, char *model, float radius, float wParent, float w, GLfloat mat_ambiente[4], GLfloat mat_diffuse[4], GLfloat mat_specular[4]) {
+    this->sunDistance = planetDistance;
+    NFaces = 0;
+    NVertex = 0;
+    zoom = 0;
+    this->radius = radius;
+    this->w = w;
+    this->wParent = wParent;
+    this->satelite = true;
+    setVector4(this->mat_ambiente, mat_ambiente[0], mat_ambiente[1], mat_ambiente[2],mat_ambiente[3]);
+    setVector4(this->mat_diffuse, mat_diffuse[0], mat_diffuse[1], mat_diffuse[2],mat_diffuse[3]);
+    setVector4(this->mat_specular, mat_specular[0], mat_specular[1], mat_specular[2],mat_specular[3]);
     Load_Model(model);
 }
 
@@ -134,19 +161,40 @@ void Modelo3D::InitGL(float Width,float Height)
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LESS);
 }
-void Modelo3D::DrawGLScene(look_type look, float angulo) {
-    glColor3f(0.5f,0.8f,1.0f);
-    GLfloat mat_ambiente[4] = {0.1,0.1,0.1,1};
-    GLfloat mat_diffuse[4] = {0.99, 0.72, 0.074, 1};
-    GLfloat mat_specular[4] = {0.8, 0.8, 0.8, 1.0};
+void Modelo3D::drawCircle()
+{
+    glDisable(GL_LIGHTING);
+    glBegin(GL_POINTS);
+    for(float i = 0.0; i < 10; i+=0.0001)
+    {
+        float theta = 2.0f * 3.1415926f * i;
+        float x = sunDistance * cosf(theta);
+        float z = sunDistance * sinf(theta);
 
+        glVertex3f(x ,z, 0);
+    }
+    glEnd();
+    glEnable(GL_LIGHTING);
+}
+void Modelo3D::DrawGLScene(look_type look, float t) {
+    drawCircle();
+    glColor3f(0.5f,0.8f,1.0f);
+    /*
+    mat_ambiente = {0.1,0.1,0.1,1};
+    mat_diffuse = {0.99, 0.72, 0.074, 1};
+    mat_specular = {0.8, 0.8, 0.8, 1.0};*/
     glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambiente);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glPushMatrix();
     glMatrixMode(GL_MODELVIEW);
-    glTranslatef(sunDistance*cos(angulo), sunDistance*sin(angulo), 0);
-    glScalef(radius/100,radius/100,radius/100);
+    if(!this->satelite)
+        glTranslatef(sunDistance*cos(w*t), sunDistance*sin(w*t), 0);
+    if(this->satelite) {
+        glTranslatef((sunDistance)*cos(wParent*t), (sunDistance)*sin(wParent*t), 0);
+        glTranslatef(50*cos(w*t), 50*sin(w*t), 0);
+    }
+    glScalef(radius,radius,radius);
     switch (look) {
         case WIRE:
             glDisable(GL_LIGHTING);
@@ -248,6 +296,7 @@ void Modelo3D::DrawGLScene(look_type look, float angulo) {
                 glEnd();
                 break;
     }
+
     glPopMatrix();
     /**************************************************************/
 

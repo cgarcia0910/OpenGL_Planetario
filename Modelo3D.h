@@ -19,7 +19,7 @@ enum look_type { WIRE , SOLID , FLAT , SMOOTH };
 
 class Modelo3D {
 private:
-        
+        void setVector4(GLfloat *v, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
 	vector<Cara> ListaCaras;
 	vector<Punto3D> ListaPuntos3D;
 	int NFaces, NVertex;
@@ -29,11 +29,17 @@ private:
     int getVertices();
     void setCaras(int NFaces);
     void setVertices(int NVertex);
-
+    void drawCircle();
+    float w;
+    float wParent;
+    GLfloat mat_ambiente[4];
+    GLfloat mat_diffuse[4];
+    GLfloat mat_specular[4];
 public:
     Modelo3D();
-    Modelo3D(double sunDistance, char *model, float radius);
-
+    Modelo3D(double sunDistance, char *model, float radius, float w, GLfloat mat_ambiente[4], GLfloat mat_diffuse[4], GLfloat mat_specular[4]);
+    Modelo3D(double planetDistance, char *model, float radius, float wParent, float w, GLfloat mat_ambiente[4], GLfloat mat_diffuse[4], GLfloat mat_specular[4]);
+    bool satelite;
     int getCaras();
     void InitGL(float Width,float Height);
     bool Load_Model(char *model);

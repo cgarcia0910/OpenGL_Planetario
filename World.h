@@ -15,7 +15,7 @@
 class World
 {
     private:
-        Lights * lights;
+
         vector<Modelo3D> models;
         Camera* cameras;
         const int MOUSE_SCROLL_UP = 3;
@@ -26,15 +26,18 @@ class World
         bool lightStatus[8] = {false, false, false, false, false, false, false, false};
     public:
         int button, state, x, y;
-        float angulo;
+        //float angulo;
+        float time;
         World();
         look_type displayStyle;
         void onMouse(int button, int state, int x, int y);
-        void loadModels(char *descModel, double sunDistance, float radius);
+        void loadModels(char *descModel, double sunDistance, float radius, float w, GLfloat mat_ambiente[4], GLfloat mat_diffuse[4], GLfloat mat_specular[4]);
+        void loadModels(char *descModel, double sunDistance, float radius, float wParent, float w, GLfloat mat_ambiente[4], GLfloat mat_diffuse[4], GLfloat mat_specular[4]);
         void display(void);
         void changeCamera(char axis);
         void changeLights(short idLight);
         void paso();
+        Lights * lights;
 };
 
 #endif // WORLD_H

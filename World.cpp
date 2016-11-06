@@ -11,16 +11,16 @@ World::World()
     glutCreateWindow("Planetario");
     glEnable(GL_LIGHTING); glEnable(GL_NORMALIZE); glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    this->lights = new Lights();
+    //this->lights = new Lights();
     this->cameras = new Camera();
     this->displayStyle = WIRE;
     this->cameras->chooseCamera('x');
     zoom = 10;
-    this->angulo = 0;
+    this->time = 0;
 }
 
 void World::paso() {
-   this->angulo = this->angulo + 0.1;
+   this->time = this->time + 0.1;
 }
 
 void World::onMouse(int button, int state, int x, int y)
@@ -48,21 +48,26 @@ void World::display(void) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     this->cameras->loadCamera();
+
     float scale_from_editor = 0.005 + double( (float)(zoom)/(float)3000);
     glScalef(scale_from_editor, scale_from_editor, scale_from_editor);
     for (int i=0; i<this->models.size(); i++)
     {
         glPushMatrix();
         ((Modelo3D)this->models[i]).onMouse(button, state, x, y);
-        ((Modelo3D)this->models[i]).DrawGLScene(displayStyle, angulo);
-
+        ((Modelo3D)this->models[i]).DrawGLScene(displayStyle, time);
         glPopMatrix();
     }
     glFlush();
     glutSwapBuffers();
 }
-void World::loadModels(char *descModel, double sunDistance, float radius){
-    Modelo3D *modelo3D = new Modelo3D(sunDistance, descModel, radius);
+void World::loadModels(char *descModel, double sunDistance, float radius, float w, GLfloat mat_ambiente[4], GLfloat mat_diffuse[4], GLfloat mat_specular[4]){
+    Modelo3D *modelo3D = new Modelo3D(sunDistance, descModel, radius, w, mat_ambiente, mat_diffuse, mat_specular);
+    modelo3D->InitGL(1024, 768);
+    this->models.push_back(*modelo3D);
+}
+void World::loadModels(char *descModel, double sunDistance, float radius, float w, float wParent, GLfloat mat_ambiente[4], GLfloat mat_diffuse[4], GLfloat mat_specular[4]){
+    Modelo3D *modelo3D = new Modelo3D(sunDistance, descModel, radius, wParent, w, mat_ambiente, mat_diffuse, mat_specular);
     modelo3D->InitGL(1024, 768);
     this->models.push_back(*modelo3D);
 }
@@ -71,7 +76,8 @@ void World::changeCamera(char axis){
 }
 
 void World::changeLights(short idLight) {
-    if(idLight <= 8 && idLight >= 1 && !lightStatus[idLight-1]) {
+    if(idLight <= 8 && idLight >= 0 && !lightStatus[idLight]) {
+        /*
         if(idLight == 1)
             lights->startLight1();
         if(idLight == 2)
@@ -87,10 +93,12 @@ void World::changeLights(short idLight) {
         if(idLight == 7)
             lights->startLight7();
         if(idLight == 8)
-            lights->startLight8();
-        lightStatus[idLight-1] = true;
+            lights->startLight8();*/
+        lightStatus[idLight] = true;
+        lights->switchLight(idLight);
     }
-    else if(idLight <= 8 && idLight >= 1 && lightStatus[idLight-1]) {
+    else if(idLight <= 8 && idLight >= 0 && lightStatus[idLight]) {
+        idLight ++;
         if(idLight == 1)
             glDisable(GL_LIGHT0);
         if(idLight == 2)
